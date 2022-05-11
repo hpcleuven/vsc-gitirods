@@ -8,8 +8,8 @@ To this end, vsc-gitirods offers an integrated workflow triggered by the post-co
 
 - Create a remote empty git repository and clone this repository on your local pc,
 - Set up a virtual environment, this is a not must but highly recommended,
-- Install vsc-gitirods, eventually this package will install other required libraries such as python-irodsclient and GitPyhton, so you dont need to install any other iRODS client.
-- Create `.config.conf` file in your home directory and copy the default keys exist in this repository. Also update value sections according to your zone name and group name.
+- Install vsc-gitirods. Eventually this package installation will install other required libraries such as python-irodsclient and GitPyhton. So that you dont need to install any other iRODS client, i.e., iCommands in order to get an active iRODS session.
+- Edit the `$HOME/.config/gitirods.conf` file in order to update values according to your own zone name and group name.
 - Configure your git repository hook by using instructions below:
     * Create a post-commit hook file by using your favorite editor or command; `touch ~/<clonned-repository-name>/.git/hooks/post-commit`,
     * Copy the all code snippet below and paste in the post-commit file you have just created,

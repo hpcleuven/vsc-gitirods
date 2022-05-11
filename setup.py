@@ -1,7 +1,12 @@
+import os
 from setuptools import setup, find_packages
 
 with open('README.md') as readme_file:
     README = readme_file.read()
+
+config_file_relative_path = os.path.expanduser('~/.config')
+if not os.path.exists(config_file_relative_path):
+    os.makedir(config_file_relative_path)
 
 setup_args = dict(
     name='vsc-gitirods',
@@ -11,6 +16,7 @@ setup_args = dict(
     long_description=README,
     license='LGPL-3.0 license',
     packages=find_packages(),
+    data_files=[(config_file_relative_path, ['gitirods.conf'])],
     author='ICTS-RDM',
     author_email='mustafa.dikmen@kuleuven.be',
     keywords=['git', 'iRODS', 'gitirods', 'Python 3', 'GitPython'],
