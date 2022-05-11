@@ -52,6 +52,12 @@ or if you want to obtain a copy from the Pypi repository:
 
     pip install vsc-gitirods
 
+## Uninstallation
+
+    pip uninstall vsc-gitirods
+
+Be aware this will not uninstall any dependencies.
+
 ## Limitations
 
 - This package can work only for the Vlaams Supercomputing Centrum (VSC) and KU Leuven iRODS zones. The reason for this is that the iRODS authentication is being ensured by using an internal repository providing an API end point for authenticating the python-irodsclient (PRC) against iRODS.
