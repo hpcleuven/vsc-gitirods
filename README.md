@@ -1,6 +1,6 @@
 # vsc-gitirods
 
-The goal of this project is to help researchers in the logging of their research-milestones in iRODS. These milestones, or checkpoints, are decided by researchers once they reach to some meaningful output for their research using a git repository. Therefore, a computational experiment output together with attached some metadata and a picture of all codes and inputs used to generate those results should automatically be stored in iRODS.
+The goal of this project is to help researchers in the logging of their research-milestones in iRODS. These milestones, or checkpoints, are decided by researchers once they reach to some meaningful output for their research using a git repository. Therefore, a computational experiment output together with attached some metadata and a picture of all codes and inputs used to generate those results should automatically and istantly be stored in iRODS.
 
 To this end, vsc-gitirods offers an integrated workflow triggered by the post-commit hook in order to upload checkpoints in iRODS. 
 
@@ -22,9 +22,13 @@ To this end, vsc-gitirods offers an integrated workflow triggered by the post-co
 The code snippet that will be stored in the post-commit file:
 
 ```python
-##!/usr/bin/env python3
+#!/usr/bin/env python3
 
-from vsc-gitirods import main
+# A workaround against EOFError
+import sys
+sys.stdin = open('/dev/tty')
+
+from vsc_gitirods.main import main
 
 if __name__ == '__main__':
     main()

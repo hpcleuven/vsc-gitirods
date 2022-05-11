@@ -11,7 +11,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from irods.session import iRODSSession
 from irods.password_obfuscation import encode
-from ..util import configReader
+from gitirods.util import configReader
 
 
 def findFreePort():

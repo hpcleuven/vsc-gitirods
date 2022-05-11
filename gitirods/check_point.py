@@ -4,9 +4,9 @@ import pathlib
 from datetime import datetime
 from irods.meta import iRODSMeta, AVUOperation
 from irods.models import Collection
-from iinit.session import renewIrodsSession
-from iinit.session import SimpleiRODSSession
-from util import getRepo, configReader
+from gitirods.iinit.session import renewIrodsSession
+from gitirods.iinit.session import SimpleiRODSSession
+from gitirods.util import getRepo, configReader
 
 
 def readExternalRepo(path):

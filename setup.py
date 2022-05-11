@@ -4,7 +4,7 @@ with open('README.md') as readme_file:
     README = readme_file.read()
 
 setup_args = dict(
-    name='gitirods',
+    name='vsc-gitirods',
     version='v0.1',
     description='git iRODS work flow integration tool in Python',
     long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setup_args = dict(
 )
 
 install_requires = [
-    'python-irodsclient=v1.1.1',
+    'python-irodsclient<=v1.1.1',
     'GitPython'
 ]
 

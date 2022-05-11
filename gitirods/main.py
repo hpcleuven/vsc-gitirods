@@ -1,6 +1,6 @@
-from util import getRepo
-from project import createProjectCol
-from check_point import executeCheckPoint
+from gitirods.util import getRepo
+from gitirods.project import createProjectCol
+from gitirods.check_point import executeCheckPoint
 
 
 def main():
