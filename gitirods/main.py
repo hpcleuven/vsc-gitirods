@@ -13,9 +13,9 @@ def main():
 
     try:
         repo, _ = getRepo()
-        repo.head.reference.commit
+        repo.commit('HEAD~1')
     except Exception as err:
-        if err.args == ("Reference at 'refs/heads/master' does not exist",):
+        if err.args == ("Invalid revision spec 'HEAD~1^0' - not enough parent commits to reach '~1'",):
             createProjectCol()
         else:
             raise

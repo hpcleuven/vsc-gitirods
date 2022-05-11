@@ -21,8 +21,7 @@ def decideExternalRepo(path):
     decideExternalRepo(path) or True/False : Bolean
     """
 
-    external_repository = input("Are you using external \
-                                 repositories? [yes/Y or no/N] ")
+    external_repository = input("Are you using external repositories? [yes/Y or no/N] ")
     external_repository = external_repository.upper()
     external_repository = external_repository.replace('YES', 'Y')
     external_repository = external_repository.replace('NO', 'N')
@@ -67,9 +66,7 @@ def defineMetadataForProjectCol():
     """
 
     project_name = input('Please name your project: ')
-    project_description = input('Please describe the project \
-                                 [should not be longer than \
-                                 280 characters!]: ')
+    project_description = input('Please describe the project [should not be longer than 280 characters!]: ')
     timestamp = round(datetime.timestamp(datetime.now()))
     date_time = datetime.fromtimestamp(timestamp)
     humanReadableTime = date_time.strftime('%d %B %Y - %H:%M')
@@ -102,8 +99,7 @@ def createProjectCol(group_name=None):
     with SimpleiRODSSession() as session:
         query = session.query(Collection)
         zone_name = session.zone
-        collection_path = f'/{zone_name}/home/{group_name}\
-                            /repositories/{repository_name}'
+        collection_path = f'/{zone_name}/home/{group_name}/repositories/{repository_name}'
         result = query.filter(Collection.name == collection_path)
         try:
             if list(result) == []:

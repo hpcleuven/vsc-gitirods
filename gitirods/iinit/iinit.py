@@ -118,8 +118,7 @@ def openCallback(port=SERVERPORT):
     config = configReader()
     data = config.items("DEFAULT")
     zone_name = data[0][1]
-    webbrowser.open(f'https://{zone_name}.irods.icts.kuleuven.be/auth/iinit?\
-                    redirect_uri=http://{HOSTNAME}:{port}/callback')
+    webbrowser.open(f'https://{zone_name}.irods.icts.kuleuven.be/auth/iinit?redirect_uri=http://{HOSTNAME}:{port}/callback')
 
 
 def run(server_class=HTTPServer, handler_class=PRCHandler, host=HOSTNAME, port=SERVERPORT):

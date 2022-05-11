@@ -190,9 +190,7 @@ def createCheckPoint(group_name=None):
     with SimpleiRODSSession() as session:
         zone_name = session.zone
         query = session.query(Collection)
-        query_filter = query.filter(Collection.name ==
-                                    f'/{zone_name}/home/\
-                                    {group_name}/repositories')
+        query_filter = query.filter(Collection.name ==f'/{zone_name}/home/{group_name}/repositories')
         irods_path_list = [item[Collection.name] for item in query_filter]
         irodsPath = irods_path_list[0] + '/' + repositoryName
     # Name the new checkpoint and metadata
