@@ -7,7 +7,7 @@ To this end, vsc-gitirods offers an integrated workflow triggered by the post-co
 ## How to use
 
 - Create a remote empty git repository and clone this repository on your local pc.
-- Set up a virtual environment, this is a not must but highly recommended.
+- Set up a virtual environment, this is not a must but highly recommended.
 - Install vsc-gitirods. This will also automatically install other required libraries such as python-irodsclient and GitPython. Thus, you do not need to install another iRODS client, i.e. iCommands, to get an active iRODS session.
 - Edit the `$HOME/.config/gitirods.conf` file in order to update values according to your own zone name and group name.
 - Configure your git repository hook by using instructions below:

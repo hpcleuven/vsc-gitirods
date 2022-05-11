@@ -15,7 +15,7 @@ def configReader():
     config : object
     """
 
-    config_file = os.path.expandvars('$HOME/.config.conf')
+    config_file = os.path.expandvars('$HOME/.config/gitirods.conf')
     config = config = configparser.ConfigParser()
     config.read(config_file)
     return config
