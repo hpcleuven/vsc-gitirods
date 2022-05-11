@@ -28,7 +28,7 @@ The code snippet that will be stored in the post-commit file:
 import sys
 sys.stdin = open('/dev/tty')
 
-from vsc_gitirods.main import main
+from gitirods.main import main
 
 if __name__ == '__main__':
     main()

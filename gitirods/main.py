@@ -14,14 +14,10 @@ def main():
     try:
         repo, _ = getRepo()
         repo.head.reference.commit
-    except ValueError as err:
+    except Exception as err:
         if err.args == ("Reference at 'refs/heads/master' does not exist",):
             createProjectCol()
         else:
             raise
     else:
         executeCheckPoint()
-
-
-if __name__ == '__main__':
-    main()

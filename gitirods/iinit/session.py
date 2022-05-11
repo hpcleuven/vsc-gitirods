@@ -1,7 +1,7 @@
 import os
 import ssl
 from irods.session import iRODSSession
-from gitirods.iinit import getIrodsSession
+from gitirods.iinit.iinit import getIrodsSession
 
 
 class SimpleiRODSSession(iRODSSession):
