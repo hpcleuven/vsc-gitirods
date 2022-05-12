@@ -33,7 +33,7 @@ def renewIrodsSession():
 
     config = configReader()
     data = config.items("DEFAULT")
-    zone_name = data[0][1]
+    zone_name = data[2][1]
     # Check if the environment file exists
     env_file = os.path.expanduser('~/.irods/irods_environment.json')
     if not os.path.exists(env_file):
