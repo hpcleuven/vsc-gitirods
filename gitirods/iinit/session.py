@@ -2,6 +2,7 @@ import os
 import ssl
 from irods.session import iRODSSession
 from gitirods.iinit.iinit import getIrodsSession
+from gitirods.util import configReader
 
 
 class SimpleiRODSSession(iRODSSession):
@@ -12,6 +13,7 @@ class SimpleiRODSSession(iRODSSession):
     with SimpleiRODSSession() as session:
         pass
     """
+
     def __init__(self):
         try:
             env_file = os.environ['IRODS_ENVIRONMENT_FILE']
@@ -29,11 +31,18 @@ def renewIrodsSession():
     getIrodsSession function in order to renew the password.
     """
 
-    with SimpleiRODSSession() as session:
-        try:
-            session.collections.get(f'/{session.zone}/home/{session.username}')
-            print('You have already a valid iRODS session.')
-        except Exception as error:
-            # CAT_INVALID_AUTHENTICATION
-            if error.code == -826000:
+    config = configReader()
+    data = config.items("DEFAULT")
+    zone_name = data[0][1]
+    # Check if there is environment file exists
+    env_file = os.path.expanduser('~/.irods/irods_environment.json')
+    if not os.path.exists(env_file):
+        getIrodsSession()
+    else:
+        with SimpleiRODSSession() as session:
+            # Catch if no user or password exists
+            try:
+                session.collections.get(f'/{zone_name}/home/{session.username}')
+                print('You have already a valid iRODS session.')
+            except Exception:
                 getIrodsSession()
