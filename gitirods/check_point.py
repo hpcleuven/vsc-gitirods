@@ -126,9 +126,9 @@ def uploadArchive(repositoryPath, checkPointPath):
 def walkRecursive(path):
     """
     A generator function:
-    Yields batches of entries specified by n. It takes
-    an iterable list and returns a generator object.
-    It waits for 10 seconds between each batch.
+    Yields local root directory path and/or local files path.
+    It walks from a root parent to sub dirs and
+    returns a generator object.
     Parameters
     ----------
     path : out* directory path
