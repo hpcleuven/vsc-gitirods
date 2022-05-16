@@ -1,12 +1,19 @@
 import os
+import sys
+import shutil
 from setuptools import setup, find_packages
 
 with open('README.md') as readme_file:
     README = readme_file.read()
 
-config_file_relative_path = os.path.expanduser('~/.config')
-if not os.path.exists(config_file_relative_path):
-    os.makedir(config_file_relative_path)
+config_file_target_path = os.path.expanduser('~/.config')
+if not os.path.exists(config_file_target_path):
+    os.makedir(config_file_target_path)
+
+def copyConfigFile():
+    original = os.path.join(sys.prefix, 'gitirods.conf')
+    target = os.path.join(config_file_target_path, 'gitirods.conf')
+    shutil.copyfile(original, target)
 
 setup_args = dict(
     name='vsc-gitirods',
@@ -31,3 +38,4 @@ install_requires = [
 
 if __name__ == '__main__':
     setup(**setup_args, install_requires=install_requires)
+    copyConfigFile()
