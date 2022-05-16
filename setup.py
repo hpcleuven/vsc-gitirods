@@ -8,7 +8,7 @@ with open('README.md') as readme_file:
 
 setup_args = dict(
     name='vsc-gitirods',
-    version='v0.1',
+    version='v0.2',
     description='git iRODS work flow integration tool in Python',
     long_description_content_type="text/markdown",
     long_description=README,
