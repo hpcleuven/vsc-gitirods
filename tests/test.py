@@ -83,7 +83,18 @@ def checkPointHelper(session, checkPointPath, repository_path):
 
 
 def iputCollection(sourcePath, destPath):
+    """
+    Upload function
+    Upload the out* directories' local files and/or folders to the iRODS,
+    in a manner that resembles the iCommands 'iput -r' command.
+    """
+
     def walkRecursive(repo_path):
+        """
+        A generator function:
+        Yields local root directory path and/or local files path.
+        Differs from the orginal by [4:]
+        """
         for root, _, files in os.walk(repo_path):
             local_dir = root.split(os.sep)[4:]
             local_dir_path = '/'.join(local_dir)
@@ -183,8 +194,8 @@ class Testgitirods(unittest.TestCase):
 
     def test_04_createCheckPoint(self):
         """
-        Tests createProjectCol function that exists in project.py
-        in a lighter way.
+        Tests createCheckPoint function that exists in check_point.py
+        in a similar way of how that function works.
         """
         _, repository_path = getRepo()
         repositoryName = pathlib.PurePath(repository_path).name
