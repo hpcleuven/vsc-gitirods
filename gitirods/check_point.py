@@ -161,8 +161,8 @@ def iputCollection(sourcePath, destPath):
     out_dirs = glob.glob(sourcePath + '/out*')
     for item in out_dirs:
         for path in walkRecursive(item):
-            target_coll = os.path.join(destPath, path)
             if os.path.isdir(path):
+                target_coll = os.path.join(destPath, path)
                 with SimpleiRODSSession() as session:
                     session.collections.create(target_coll)
             elif os.path.isfile(path):

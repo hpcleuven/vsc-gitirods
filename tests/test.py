@@ -1,6 +1,7 @@
 import unittest
 import os
 import pathlib
+import glob
 import subprocess
 import shutil
 import configparser
@@ -13,7 +14,7 @@ from irods.meta import iRODSMeta, AVUOperation
 from gitirods.iinit.iinit import getIrodsSession
 from gitirods.util import getRepo
 from gitirods.project import touch
-from gitirods.check_point import iputCollection
+from gitirods.check_point import uploadArchive
 
 
 def testConfigReader():
@@ -53,7 +54,7 @@ def decideExternalRepo(path):
     Creates .repos file regardless of user input
     """
 
-    external_repository = input("Are you using external repositories? [yes/Y or no/N] ")
+    external_repository = input("Are you using external repositories? [type anything] ")
     external_repository = 'Y'
     if external_repository == 'Y':
             touch(f'{path}/.repos')
@@ -81,7 +82,29 @@ def checkPointHelper(session, checkPointPath, repository_path):
     touch(repository_path + '/' + 'program_test.py')
 
 
-class TestSession(unittest.TestCase):
+def iputCollection(sourcePath, destPath):
+    def walkRecursive(repo_path):
+        for root, _, files in os.walk(repo_path):
+            local_dir = root.split(os.sep)[4:]
+            local_dir_path = '/'.join(local_dir)
+            yield local_dir_path
+            for name in files:
+                local_files_path = os.path.join(root, name)
+                yield local_files_path
+    out_dirs = glob.glob(sourcePath + '/out*')
+    for item in out_dirs:
+        for path in walkRecursive(item):
+            if os.path.isdir(path):
+                target_coll = os.path.join(destPath, path)
+                with SimpleiRODSSession() as session:
+                    session.collections.create(target_coll)
+            elif os.path.isfile(path):
+                file_name = os.path.basename(path)
+                with SimpleiRODSSession() as session:
+                    session.data_objects.put(path, target_coll + '/' + file_name)
+
+
+class Testgitirods(unittest.TestCase):
 
     def setUp(self):
         config = testConfigReader()
@@ -113,13 +136,9 @@ class TestSession(unittest.TestCase):
 
         with SimpleiRODSSession() as session:
             try:
-                session.collections.get(f'/{session.zone}/home/{session.username}')
-                print('You have already a valid iRODS session.')
-            except Exception as error:
-                no_password = error.code
-                print(no_password)
-                if self.assertEqual(no_password, -826000):
-                    getIrodsSession(5)
+                assert session.collections.exists(f'/{session.zone}/home/{session.username}')
+            except Exception:
+                getIrodsSession(3)
 
     def test_03_createProjectCol(self):
         """
@@ -190,8 +209,12 @@ class TestSession(unittest.TestCase):
             self.assertEqual(col[0].name, 'checkPoint_test_attr')
             self.assertEqual(col[0].value, 'checkPoint_test_value')
         iputCollection(repository_path, checkPointPath)
+        cmd = ["git", "commit", "--allow-empty", "-m", "'Test Commit'"]
+        subprocess.run(cmd)
+        uploadArchive(repository_path, checkPointPath)
         with SimpleiRODSSession() as session:
             self.assertEqual(session.collections.exists(checkPointPath + '/out'), True)
+            self.assertEqual(session.data_objects.exists(checkPointPath + '/archive.zip'), True)
         shutil.rmtree(repository_path)
 
 
