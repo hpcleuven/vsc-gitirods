@@ -7,9 +7,6 @@ def configReader():
     """
     ConfigParser function
     Reads configuration variables inside a file and returns a reader object.
-    Parameters
-    ----------
-    conf : Configuration file.
     Returns
     -------
     config : object

@@ -1,4 +1,3 @@
-
 import os
 import os.path
 import sys
@@ -149,7 +148,7 @@ def down(server_class=HTTPServer, handler_class=PRCHandler, host=HOSTNAME, port=
     print(f'Shutting down local server on {host}:{port}')
 
 
-def getIrodsSession():
+def getIrodsSession(wait=None):
     """
     Activation fucntion:
     In order to renew iRODS session, it executes other relavant
@@ -163,4 +162,7 @@ def getIrodsSession():
     except KeyboardInterrupt:
         down()
     # wait until the local webserver finished starting up
-    time.sleep(20)
+    if wait == None:
+        time.sleep(20)
+    else:
+        time.sleep(wait)
