@@ -171,7 +171,7 @@ def createCheckPoint(group_name=None):
 
     if group_name is None:
         config = configReader()
-        data = config.items("DEFAULT")
+        data = config.items('DEFAULT')
         group_name = data[1][1]
     _, repositoryPath = getRepo()
     repositoryName = pathlib.PurePath(repositoryPath).name
@@ -197,11 +197,11 @@ def createCheckPoint(group_name=None):
         # Create check point collection
         session.collections.create(checkPointPath)
         coll = session.collections.get(checkPointPath)
+        iputCollection(session, repositoryPath, checkPointPath)
+        addAtomicMetadata(coll, attributes, values)
         if os.path.exists(repositoryPath + '/.repos'):
             addExternalRepoMetadata(session, checkPointPath, repositoryPath)
         uploadArchive(session, repositoryPath, checkPointPath)
-        iputCollection(session, repositoryPath, checkPointPath)
-        addAtomicMetadata(coll, attributes, values)
 
 
 def executeCheckPoint():
@@ -227,6 +227,6 @@ def executeCheckPoint():
             print('Invalid Input')
             return executeCheckPoint()
     except Exception as error:
-        print("Please enter valid inputs")
+        print('Please enter valid inputs')
         print(error)
         return executeCheckPoint()

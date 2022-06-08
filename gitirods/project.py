@@ -85,7 +85,7 @@ def createProjectCol(group_name=None):
     renewIrodsSession()
     if group_name is None:
         config = configReader()
-        data = config.items("DEFAULT")
+        data = config.items('DEFAULT')
         group_name = data[1][1]
     # Get the path of the repository in which this script is executed.
     repo, repository_path = getRepo()
