@@ -6,7 +6,7 @@ from irods.meta import iRODSMeta, AVUOperation
 from irods.models import Collection
 from gitirods.iinit.session import renewIrodsSession
 from gitirods.iinit.session import SimpleiRODSSession
-from gitirods.util import getRepo, configReader
+from gitirods.util import getRepo, configReader, addAtomicMetadata
 
 
 def readExternalRepo(path):
@@ -43,16 +43,18 @@ def defineMetadataForCheckPoint():
     checkPointComment, commitID, commitMessage, projectRepoURL : str
     """
 
-    checkPointComment = input('Write Checkpoint comment: ')
+    checkPointCommentInput = input('Write Checkpoint comment: ')
+    checkPointComment = checkPointCommentInput.rstrip()
     repo, _ = getRepo()
     master = repo.head.reference
     commitID = master.commit.hexsha
     commitMessage = master.commit.message
+    commitMessage = commitMessage.rstrip()
     committerName = master.commit.author.name
     committerMail = master.commit.author.email
     projectRepoURL = repo.remotes.origin.url
-    return checkPointComment, commitID, commitMessage,\
-        committerName, committerMail, projectRepoURL
+    return checkPointComment, projectRepoURL, commitID, \
+            commitMessage, committerName, committerMail
 
 
 def addExternalRepoMetadata(checkPointPath, path):
@@ -199,37 +201,17 @@ def createCheckPoint(group_name=None):
     checkPointNameExtension = datetime.today().strftime('%Y%m%d_%H%M')
     checkPointName = f'{checkPointInput}-{checkPointNameExtension}'
     checkPointPath = irodsPath + '/' + checkPointName
-    checkPointComment, commitID, commitMessage, \
-        committerName, committerMail, \
-        projectRepoURL = defineMetadataForCheckPoint()
-    # Create check point collection in iRODS and Add metadata AVUs
+    # Define metadata
+    attributes = ['user.git.hooks.check_point_comment', 'user.git.hooks.project_repository_url', \
+                  'user.git.hooks.project_repository_commit_ID', 'user.git.hooks.project_repository_commit_message', \
+                  'user.git.hooks.project_repository_committer_name', 'user.git.hooks.project_repository_commit_mail']
+    values = defineMetadataForCheckPoint()
+    # Create check point collection in iRODS
+    # Add metadata on the check point collection
     with SimpleiRODSSession() as session:
         session.collections.create(checkPointPath)
         coll = session.collections.get(checkPointPath)
-        coll.metadata.apply_atomic_operations(
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.check_point_comment',
-                                       f'{checkPointComment}')),
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.project_repository_url',
-                                       f'{projectRepoURL}')),
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.\
-                                       project_repository_commit_ID',
-                                       f'{commitID}')),
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.\
-                                       project_repository_commit_message',
-                                       f'{commitMessage}')),
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.\
-                                       project_repository_committer_name',
-                                       f'{committerName}')),
-            AVUOperation(operation='add',
-                         avu=iRODSMeta('user.git.hooks.\
-                                       project_repository_commit_mail',
-                                       f'{committerMail}'))
-                                                )
+        addAtomicMetadata(coll, attributes, values)
     if os.path.exists(repositoryPath + '/.repos'):
         addExternalRepoMetadata(checkPointPath, repositoryPath)
     uploadArchive(repositoryPath, checkPointPath)
