@@ -57,7 +57,7 @@ def defineMetadataForCheckPoint():
             commitMessage, committerName, committerMail
 
 
-def addExternalRepoMetadata(checkPointPath, path):
+def addExternalRepoMetadata(session, checkPointPath, path):
     """
     Metadata add function:
     Annotate AVUs extracted from the repositories written in '.repos' file
@@ -74,24 +74,15 @@ def addExternalRepoMetadata(checkPointPath, path):
         master = repo.head.reference
         commitID_external = master.commit.hexsha
         commitMessage_external = master.commit.message
+        commitMessage_external = commitMessage_external.rstrip()
         projectRepoURL_external = repo.remotes.origin.url
         repoBaseName = os.path.basename(repository_path)
-        with SimpleiRODSSession() as session:
-            coll = session.collections.get(checkPointPath)
-            coll.metadata.apply_atomic_operations(
-                AVUOperation(operation='add',
-                             avu=iRODSMeta(f'user.git.hooks.external_repository_url_\
-                                           {repoBaseName}',
-                                           f'{projectRepoURL_external}')),
-                AVUOperation(operation='add',
-                             avu=iRODSMeta(f'user.git.hooks.external_commit_id_\
-                                           {repoBaseName}',
-                                           f'{commitID_external}')),
-                AVUOperation(operation='add',
-                             avu=iRODSMeta(f'user.git.hooks.external_commit_message_\
-                                           {repoBaseName}',
-                                           f'{commitMessage_external}'))
-                )
+        attributes = [f'user.git.hooks.external_repository_url_{repoBaseName}', \
+                      f'user.git.hooks.external_commit_id_{repoBaseName}', \
+                      f'user.git.hooks.external_commit_message_{repoBaseName}']
+        values = [projectRepoURL_external, commitID_external, commitMessage_external]
+        coll = session.collections.get(checkPointPath)
+        addAtomicMetadata(coll, attributes, values)
     os.chdir(path)
 
 
@@ -212,8 +203,8 @@ def createCheckPoint(group_name=None):
         session.collections.create(checkPointPath)
         coll = session.collections.get(checkPointPath)
         addAtomicMetadata(coll, attributes, values)
-    if os.path.exists(repositoryPath + '/.repos'):
-        addExternalRepoMetadata(checkPointPath, repositoryPath)
+        if os.path.exists(repositoryPath + '/.repos'):
+            addExternalRepoMetadata(session, checkPointPath, repositoryPath)
     uploadArchive(repositoryPath, checkPointPath)
     iputCollection(repositoryPath, checkPointPath)
 
