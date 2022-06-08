@@ -97,7 +97,7 @@ def makeArchive():
     repo.git.archive('--format=zip', '-o', 'archive.zip', 'HEAD')
 
 
-def uploadArchive(repositoryPath, checkPointPath):
+def uploadArchive(session, repositoryPath, checkPointPath):
     """
     Upload function:
     It uploads an archive file to iRODS - inside checkpoint collection,
@@ -111,8 +111,7 @@ def uploadArchive(repositoryPath, checkPointPath):
     makeArchive()
     source_path = os.path.join(repositoryPath, 'archive.zip')
     destination_path = os.path.join(checkPointPath, 'archive.zip')
-    with SimpleiRODSSession() as session:
-        session.data_objects.put(source_path, destination_path)
+    session.data_objects.put(source_path, destination_path)
     os.remove(source_path)
 
 
@@ -139,7 +138,7 @@ def walkRecursive(path):
             yield local_files_path
 
 
-def iputCollection(sourcePath, destPath):
+def iputCollection(session, sourcePath, destPath):
     """
     A recursive collection upload function:
     Upload the out* directories' local files and/or folders to the iRODS,
@@ -156,13 +155,10 @@ def iputCollection(sourcePath, destPath):
         for path in walkRecursive(item):
             if os.path.isdir(path):
                 target_coll = os.path.join(destPath, path)
-                with SimpleiRODSSession() as session:
-                    session.collections.create(target_coll)
+                session.collections.create(target_coll)
             elif os.path.isfile(path):
                 file_name = os.path.basename(path)
-                with SimpleiRODSSession() as session:
-                    session.data_objects.put(path,
-                                             target_coll + '/' + file_name)
+                session.data_objects.put(path, target_coll + '/' + file_name)
 
 
 def createCheckPoint(group_name=None):
@@ -179,34 +175,33 @@ def createCheckPoint(group_name=None):
         group_name = data[1][1]
     _, repositoryPath = getRepo()
     repositoryName = pathlib.PurePath(repositoryPath).name
-    # Query to get iRODS path for the repository collection
-    with SimpleiRODSSession() as session:
-        zone_name = session.zone
-        query = session.query(Collection)
-        query_filter = query.filter(Collection.name == f'/{zone_name}/home/{group_name}/repositories')
-        irods_path_list = [item[Collection.name] for item in query_filter]
-        irodsPath = irods_path_list[0] + '/' + repositoryName
     # Name the new checkpoint and metadata
     checkPointInput = input('Write your Checkpoint name: ')
     checkPointInput = checkPointInput.upper()
     checkPointNameExtension = datetime.today().strftime('%Y%m%d_%H%M')
-    checkPointName = f'{checkPointInput}-{checkPointNameExtension}'
-    checkPointPath = irodsPath + '/' + checkPointName
     # Define metadata
     attributes = ['user.git.hooks.check_point_comment', 'user.git.hooks.project_repository_url', \
                   'user.git.hooks.project_repository_commit_ID', 'user.git.hooks.project_repository_commit_message', \
                   'user.git.hooks.project_repository_committer_name', 'user.git.hooks.project_repository_commit_mail']
     values = defineMetadataForCheckPoint()
-    # Create check point collection in iRODS
-    # Add metadata on the check point collection
+    # Use a single seesion to create a check point collection, to upload data and to add metadata. 
     with SimpleiRODSSession() as session:
+        # Query to get iRODS path for the repository collection
+        zone_name = session.zone
+        query = session.query(Collection)
+        query_filter = query.filter(Collection.name == f'/{zone_name}/home/{group_name}/repositories')
+        irods_path_list = [item[Collection.name] for item in query_filter]
+        irodsPath = irods_path_list[0] + '/' + repositoryName
+        checkPointName = f'{checkPointInput}-{checkPointNameExtension}'
+        checkPointPath = irodsPath + '/' + checkPointName
+        # Create check point collection
         session.collections.create(checkPointPath)
         coll = session.collections.get(checkPointPath)
-        addAtomicMetadata(coll, attributes, values)
         if os.path.exists(repositoryPath + '/.repos'):
             addExternalRepoMetadata(session, checkPointPath, repositoryPath)
-    uploadArchive(repositoryPath, checkPointPath)
-    iputCollection(repositoryPath, checkPointPath)
+        uploadArchive(session, repositoryPath, checkPointPath)
+        iputCollection(session, repositoryPath, checkPointPath)
+        addAtomicMetadata(coll, attributes, values)
 
 
 def executeCheckPoint():
