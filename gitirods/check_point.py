@@ -57,18 +57,21 @@ def defineMetadataForCheckPoint():
             commitMessage, committerName, committerMail
 
 
-def addExternalRepoMetadata(session, checkPointPath, path):
+def defineExternalReposMetadata(path):
     """
     Metadata add function:
     Annotate AVUs extracted from the repositories written in '.repos' file
     to the checkpoint collections.
     Parameters
     ----------
-    checkPointPath : checkpoint collection path in iRODS
-    path : main repository(project) directoy
+    avus (str): external repository directoy
+    Returns
+    -------
+    avus (dict): metadata attrs values extracted from external repositories
     """
 
     externalRepoPaths = readExternalRepo(path)
+    avus = {}
     for item in externalRepoPaths:
         repo, repository_path = getRepo(item)
         master = repo.head.reference
@@ -77,13 +80,10 @@ def addExternalRepoMetadata(session, checkPointPath, path):
         commitMessage_external = commitMessage_external.rstrip()
         projectRepoURL_external = repo.remotes.origin.url
         repoBaseName = os.path.basename(repository_path)
-        attributes = [f'user.git.hooks.external_repository_url_{repoBaseName}', \
-                      f'user.git.hooks.external_commit_id_{repoBaseName}', \
-                      f'user.git.hooks.external_commit_message_{repoBaseName}']
-        values = [projectRepoURL_external, commitID_external, commitMessage_external]
-        coll = session.collections.get(checkPointPath)
-        addAtomicMetadata(coll, attributes, values)
-    os.chdir(path)
+        avus[f'user.git.hooks.external_repository_url_{repoBaseName}'] = projectRepoURL_external
+        avus[f'user.git.hooks.external_commit_id_{repoBaseName}'] = commitID_external
+        avus[f'user.git.hooks.external_commit_message_{repoBaseName}'] = commitMessage_external
+    return avus
 
 
 def makeArchive():
@@ -104,6 +104,7 @@ def uploadArchive(session, repositoryPath, checkPointPath):
     and if needed it creates sub-collections in iRODS.
     Parameters
     ----------
+    session : an iRODS session object
     repositoryPath : repository path in the local file system
     checkPointPath : checkpoint collection path in iRODS
     """
@@ -145,6 +146,7 @@ def iputCollection(session, sourcePath, destPath):
     in a manner that resembles the iCommands 'iput -r' command.
     Parameters
     ----------
+    session : an iRODS session object
     sourcePath : git repository path on the local file system
     destPath : iRODS path >
                 /zone/home/groupCol/repositories/repoName/checkPointName
@@ -167,6 +169,9 @@ def createCheckPoint(group_name=None):
     It names the checkpoint based on user inout and date time
     and creates the checkpoint collection. Finally it adds specified
     metadata on the check point collection and calls upload function.
+    Parameter
+    ----------
+    group_name : group name in an iRODS zone (default is None)
     """
 
     if group_name is None:
@@ -184,6 +189,7 @@ def createCheckPoint(group_name=None):
                   'user.git.hooks.project_repository_commit_ID', 'user.git.hooks.project_repository_commit_message', \
                   'user.git.hooks.project_repository_committer_name', 'user.git.hooks.project_repository_commit_mail']
     values = defineMetadataForCheckPoint()
+    values = list(values)
     # Use a single seesion to create a check point collection, to upload data and to add metadata. 
     with SimpleiRODSSession() as session:
         # Query to get iRODS path for the repository collection
@@ -198,10 +204,11 @@ def createCheckPoint(group_name=None):
         session.collections.create(checkPointPath)
         coll = session.collections.get(checkPointPath)
         iputCollection(session, repositoryPath, checkPointPath)
-        addAtomicMetadata(coll, attributes, values)
-        if os.path.exists(repositoryPath + '/.repos'):
-            addExternalRepoMetadata(session, checkPointPath, repositoryPath)
         uploadArchive(session, repositoryPath, checkPointPath)
+        external_repos = repositoryPath + '/.repos'
+        addAtomicMetadata(coll, attributes, values,
+            external_repos=external_repos, func=defineExternalReposMetadata)
+
 
 
 def executeCheckPoint():

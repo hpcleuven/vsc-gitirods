@@ -80,6 +80,9 @@ def createProjectCol(group_name=None):
     a project(repository) collection inside the project home collection.
     Creates gitignore and README files. Once specified it also creates
     .repos file for external repositories.
+    Parameter
+    ----------
+    group_name : group name in an iRODS zone (default is None)
     """
 
     renewIrodsSession()
