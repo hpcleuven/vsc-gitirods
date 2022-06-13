@@ -13,7 +13,7 @@ To this end, vsc-gitirods offers an integrated workflow triggered by the post-co
 - Configure your git repository hook by using instructions below:
     * Create a post-commit hook file by using your favorite editor or command; `touch ~/<cloned-repository-name>/.git/hooks/post-commit`,
     * Copy the code snippet below and paste in the post-commit file you have just created,
-    * Change your shebang line for the python environment if required.
+    * Adjust the shebang line for your python environment if required.
     * Make your script file executable; `chmod +x ~/<cloned-repository-name>/.git/hooks/post-commit`
 - Follow the equivalent steps of instructions given above for Windows machines,
 - Execute `git commit --allow-empty -m "Trigger project workflow"` to create project files and a corresponding iRODS collection,
