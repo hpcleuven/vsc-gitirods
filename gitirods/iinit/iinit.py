@@ -173,7 +173,7 @@ def getIrodsSession(wait=None):
     except KeyboardInterrupt:
         down()
     # if the local server (callback) works correctly wait until finishes starting up
-    if call != 503:
+    if call == 200:
         if wait == None:
             time.sleep(20)
         else:
