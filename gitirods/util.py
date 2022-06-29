@@ -78,3 +78,27 @@ def addAtomicMetadata(
             avus = list(zip(keys, values))
             obj.metadata.apply_atomic_operations(*[AVUOperation(operation='add', \
                                              avu=iRODSMeta(meta[0], meta[1])) for meta in avus])
+
+
+def projectExists(object):
+    """
+    Check function:
+    Based on a specific commit message it will determine whether
+    the project in question exists or not.
+    Parameters
+    ----------
+    object : instantiation of Repo
+    Returns
+    -------
+    True : shows this is a nonempty repository
+    """
+
+    project_message = 'iRODS:Trigger project workflow'
+    commits_list = list(object.iter_commits())
+    commit_messages_list = []
+    for item in range(len(commits_list)):
+        commit = commits_list[item]
+        commit_message = commit.message.strip()
+        commit_messages_list.append(commit_message)
+    if project_message not in commit_messages_list:
+        return True
