@@ -6,7 +6,7 @@ from irods.models import Collection
 from irods.exception import NetworkException
 from gitirods.iinit.session import renewIrodsSession
 from gitirods.iinit.session import SimpleiRODSSession
-from gitirods.util import getRepo, configReader, addAtomicMetadata, resetCommit
+from gitirods.util import getRepo, configReader, addAtomicMetadata, resetCommit, ignoreKeystrokes
 
 
 def readExternalRepo(path):
@@ -234,7 +234,7 @@ def executeCheckPoint():
         resetCommit(repo)
     try:
         if checkPointQuestion == 'Y':
-            renewIrodsSession()
+            ignoreKeystrokes(renewIrodsSession)
             createCheckPoint()
             print('Completed!')
             return True

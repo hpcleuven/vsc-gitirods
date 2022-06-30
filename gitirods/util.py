@@ -116,3 +116,22 @@ def resetCommit(obj):
     """
 
     obj.head.reset('HEAD~1', index=False, working_tree=False)
+
+
+def ignoreKeystrokes(callSession):
+    """
+    Flush function:
+    It calls iRODS session renewal function and
+    while waiting for it to finish, ignores any keystrokes.
+    Parameters
+    ----------
+    callSession : function - renewIrodsSession()
+    """
+
+    while (1):
+        import sys
+        from termios import tcflush, TCIOFLUSH
+        callSession()
+        sys.stdout.flush()
+        tcflush(sys.stdin, TCIOFLUSH)
+        break
