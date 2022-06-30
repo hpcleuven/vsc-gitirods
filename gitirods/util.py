@@ -102,3 +102,16 @@ def projectExists(object):
         commit_messages_list.append(commit_message)
     if project_message not in commit_messages_list:
         return True
+
+
+def resetCommit(obj):
+    """
+    Reset function:
+    It removes the last commit softly. An equivalant of 'git reset --soft HEAD~1'
+    If working_tree=True; removes hardly.
+    Parameters
+    ----------
+    object : instantiation of Repo
+    """
+
+    obj.head.reset('HEAD~1', index=False, working_tree=False)

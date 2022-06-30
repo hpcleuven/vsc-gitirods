@@ -10,7 +10,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from irods.session import iRODSSession
 from irods.password_obfuscation import encode
-from gitirods.util import configReader
+from gitirods.util import configReader, getRepo, resetCommit
 
 
 def findFreePort():
@@ -172,6 +172,7 @@ def getIrodsSession(wait=None):
         run()
     except KeyboardInterrupt:
         down()
+        resetCommit(repo)
     # if the local server (callback) works correctly wait until finishes starting up
     if call == 200:
         if wait == None:
@@ -179,4 +180,6 @@ def getIrodsSession(wait=None):
         else:
             time.sleep(wait)
     else:
+        repo, _ = getRepo()
+        resetCommit(repo)
         sys.exit()
