@@ -100,6 +100,7 @@ def projectExists(object):
         commit = commits_list[item]
         commit_message = commit.message.strip()
         commit_messages_list.append(commit_message)
+    del commit_messages_list[0]
     if project_message not in commit_messages_list:
         return True
 

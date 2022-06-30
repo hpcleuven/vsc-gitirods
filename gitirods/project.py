@@ -131,9 +131,16 @@ def createProjectCol(group_name=None):
                     # In the case that external repositories are used the file .repos is created
                     decideExternalRepo(repository_path)
                     print('Completed!')
+                else:
+                    print('You are trying to initiate a project already exists in iRODS. Please check it again!')
+                    resetCommit(repo)
+                    sys.exit()
             except Exception as error:
                 print(error)
                 print(f'{error} wants to exit!')
+                import subprocess
+                cmd = ['git', 'update-ref', '-d', 'HEAD']
+                subprocess.run(cmd)
                 sys.exit()
     except KeyboardInterrupt:
         resetCommit(repo)
