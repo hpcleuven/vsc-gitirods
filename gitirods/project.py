@@ -102,7 +102,6 @@ def createProjectCol(group_name=None):
     committerMail = master.commit.author.email
     projectRepoURL = repo.remotes.origin.url
     repository_name = pathlib.PurePath(repository_path).name
-    # Check whether the git repository name already exists or not
     try:
         with SimpleiRODSSession() as session:
             query = session.query(Collection)
@@ -110,6 +109,7 @@ def createProjectCol(group_name=None):
             collection_path = f'/{zone_name}/home/{group_name}/repositories/{repository_name}'
             result = query.filter(Collection.name == collection_path)
             try:
+                # Check whether the git repository name already exists or not
                 if list(result) == []:
                     session.collections.create(collection_path)
                     collection = session.collections.get(collection_path)
@@ -138,9 +138,8 @@ def createProjectCol(group_name=None):
             except Exception as error:
                 print(error)
                 print(f'{error} wants to exit!')
-                import subprocess
-                cmd = ['git', 'update-ref', '-d', 'HEAD']
-                subprocess.run(cmd)
+                # Using git directly
+                repo.git.update_ref(d='HEAD')
                 sys.exit()
     except KeyboardInterrupt:
         resetCommit(repo)
