@@ -17,7 +17,7 @@ To this end, vsc-gitirods offers an integrated workflow triggered by the post-co
     * Adjust the shebang line for your python environment if required.
     * Make your script file executable; `chmod +x .git/hooks/post-commit`
 - Follow the equivalent steps of instructions given above for Windows machines,
-- Execute `git commit --allow-empty -m "iRODS:Trigger project workflow"` to create project files and a corresponding iRODS collection. **It is required to use this unique git message as a first commit both in your empty or non-empty repositories**.
+- Execute `git commit --allow-empty -m "iRODS:Trigger project workflow"` to create project files and a corresponding iRODS collection. **It is required to use this unique git message as a first commit both in your empty or non-empty repositories as an initiator of your workflow.**.
 - Once you give a positive answer to the 'Is a checkpoint reached?' question, the process for the checkpoint sync to iRODS will start.
 
 
