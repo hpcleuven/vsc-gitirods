@@ -2,11 +2,11 @@ import os
 import glob
 import pathlib
 from datetime import datetime
-from irods.meta import iRODSMeta, AVUOperation
 from irods.models import Collection
+from irods.exception import NetworkException
 from gitirods.iinit.session import renewIrodsSession
 from gitirods.iinit.session import SimpleiRODSSession
-from gitirods.util import getRepo, configReader, addAtomicMetadata
+from gitirods.util import getRepo, configReader, addAtomicMetadata, resetCommit, ignoreKeystrokes
 
 
 def readExternalRepo(path):
@@ -178,11 +178,14 @@ def createCheckPoint(group_name=None):
         config = configReader()
         data = config.items('DEFAULT')
         group_name = data[1][1]
-    _, repositoryPath = getRepo()
+    repo, repositoryPath = getRepo()
     repositoryName = pathlib.PurePath(repositoryPath).name
     # Name the new checkpoint and metadata
-    checkPointInput = input('Write your Checkpoint name: ')
-    checkPointInput = checkPointInput.upper()
+    try:
+        checkPointInput = input('Write your Checkpoint name: ')
+        checkPointInput = checkPointInput.upper()
+    except KeyboardInterrupt:
+        resetCommit(repo)
     checkPointNameExtension = datetime.today().strftime('%Y%m%d_%H%M')
     # Define metadata
     attributes = ['user.git.hooks.check_point_comment', 'user.git.hooks.project_repository_url', \
@@ -190,25 +193,29 @@ def createCheckPoint(group_name=None):
                   'user.git.hooks.project_repository_committer_name', 'user.git.hooks.project_repository_commit_mail']
     values = defineMetadataForCheckPoint()
     values = list(values)
-    # Use a single seesion to create a check point collection, to upload data and to add metadata. 
-    with SimpleiRODSSession() as session:
-        # Query to get iRODS path for the repository collection
-        zone_name = session.zone
-        query = session.query(Collection)
-        query_filter = query.filter(Collection.name == f'/{zone_name}/home/{group_name}/repositories')
-        irods_path_list = [item[Collection.name] for item in query_filter]
-        irodsPath = irods_path_list[0] + '/' + repositoryName
-        checkPointName = f'{checkPointInput}-{checkPointNameExtension}'
-        checkPointPath = irodsPath + '/' + checkPointName
-        # Create check point collection
-        session.collections.create(checkPointPath)
-        coll = session.collections.get(checkPointPath)
-        iputCollection(session, repositoryPath, checkPointPath)
-        uploadArchive(session, repositoryPath, checkPointPath)
-        external_repos = repositoryPath + '/.repos'
-        addAtomicMetadata(coll, attributes, values,
-            external_repos=external_repos, func=defineExternalReposMetadata)
-
+    # Use a single seesion to create a check point collection, to upload data and to add metadata.
+    try:
+        with SimpleiRODSSession() as session:
+            # Query to get iRODS path for the repository collection
+            zone_name = session.zone
+            query = session.query(Collection)
+            query_filter = query.filter(Collection.name == f'/{zone_name}/home/{group_name}/repositories')
+            irods_path_list = [item[Collection.name] for item in query_filter]
+            irodsPath = irods_path_list[0] + '/' + repositoryName
+            checkPointName = f'{checkPointInput}-{checkPointNameExtension}'
+            checkPointPath = irodsPath + '/' + checkPointName
+            # Create check point collection
+            session.collections.create(checkPointPath)
+            coll = session.collections.get(checkPointPath)
+            iputCollection(session, repositoryPath, checkPointPath)
+            uploadArchive(session, repositoryPath, checkPointPath)
+            external_repos = repositoryPath + '/.repos'
+            addAtomicMetadata(coll, attributes, values,
+                external_repos=external_repos, func=defineExternalReposMetadata)
+    except KeyboardInterrupt:
+        resetCommit(repo)
+    except NetworkException:
+        resetCommit(repo)
 
 
 def executeCheckPoint():
@@ -217,13 +224,17 @@ def executeCheckPoint():
     Once the checkpoint input is received, it executes required fucntions.
     """
 
-    checkPointQuestion = input('Is a checkpoint reached? [yes/Y or no/N] ')
-    checkPointQuestion = checkPointQuestion.upper()
-    checkPointQuestion = checkPointQuestion.replace('YES', 'Y')
-    checkPointQuestion = checkPointQuestion.replace('NO', 'N')
+    try:
+        checkPointQuestion = input('Is a checkpoint reached? [yes/Y or no/N] ')
+        checkPointQuestion = checkPointQuestion.upper()
+        checkPointQuestion = checkPointQuestion.replace('YES', 'Y')
+        checkPointQuestion = checkPointQuestion.replace('NO', 'N')
+    except KeyboardInterrupt:
+        repo, _ = getRepo()
+        resetCommit(repo)
     try:
         if checkPointQuestion == 'Y':
-            renewIrodsSession()
+            ignoreKeystrokes(renewIrodsSession)
             createCheckPoint()
             print('Completed!')
             return True
@@ -233,6 +244,9 @@ def executeCheckPoint():
         else:
             print('Invalid Input')
             return executeCheckPoint()
+    except KeyboardInterrupt:
+        repo, _ = getRepo()
+        resetCommit(repo)
     except Exception as error:
         print('Please enter valid inputs')
         print(error)

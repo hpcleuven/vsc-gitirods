@@ -10,7 +10,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from irods.session import iRODSSession
 from irods.password_obfuscation import encode
-from gitirods.util import configReader
+from gitirods.util import configReader, getRepo, resetCommit
 
 
 def findFreePort():
@@ -117,7 +117,18 @@ def openCallback(port=SERVERPORT):
     config = configReader()
     data = config.items("DEFAULT")
     zone_host_name = data[0][1]
-    webbrowser.open(f'https://{zone_host_name}/auth/iinit?redirect_uri=http://{HOSTNAME}:{port}/callback')
+    try:
+        webbrowser.open(f'https://{zone_host_name}/auth/iinit?redirect_uri=http://{HOSTNAME}:{port}/callback')
+        import requests
+        response = requests.get(f'https://{zone_host_name}/auth/iinit?redirect_uri=http://{HOSTNAME}:{port}/callback')
+        if response.status_code == 200:
+            return 200
+    except Exception as err:
+        print('')
+        print(err)
+        print('')
+        print('Error: Your zone host name might be incorrect. Please check your configuration file!')
+        return 503
 
 
 def run(server_class=HTTPServer, handler_class=PRCHandler, host=HOSTNAME, port=SERVERPORT):
@@ -155,14 +166,20 @@ def getIrodsSession(wait=None):
     functions in order.
     """
 
-    openCallback()
+    call = openCallback()
     # if the run time for the server is too long, it quits the program
     try:
         run()
     except KeyboardInterrupt:
         down()
-    # wait until the local webserver finished starting up
-    if wait == None:
-        time.sleep(20)
+        resetCommit(repo)
+    # if the local server (callback) works correctly wait until finishes starting up
+    if call == 200:
+        if wait == None:
+            time.sleep(20)
+        else:
+            time.sleep(wait)
     else:
-        time.sleep(wait)
+        repo, _ = getRepo()
+        resetCommit(repo)
+        sys.exit()

@@ -78,3 +78,60 @@ def addAtomicMetadata(
             avus = list(zip(keys, values))
             obj.metadata.apply_atomic_operations(*[AVUOperation(operation='add', \
                                              avu=iRODSMeta(meta[0], meta[1])) for meta in avus])
+
+
+def projectExists(object):
+    """
+    Check function:
+    Based on a specific commit message it will determine whether
+    the project in question exists or not.
+    Parameters
+    ----------
+    object : instantiation of Repo
+    Returns
+    -------
+    True : shows this is a nonempty repository
+    """
+
+    project_message = 'iRODS:Trigger project workflow'
+    commits_list = list(object.iter_commits())
+    commit_messages_list = []
+    for item in range(len(commits_list)):
+        commit = commits_list[item]
+        commit_message = commit.message.strip()
+        commit_messages_list.append(commit_message)
+    del commit_messages_list[0]
+    if project_message not in commit_messages_list:
+        return True
+
+
+def resetCommit(obj):
+    """
+    Reset function:
+    It removes the last commit softly. An equivalant of 'git reset --soft HEAD~1'
+    If working_tree=True; removes hardly.
+    Parameters
+    ----------
+    object : instantiation of Repo
+    """
+
+    obj.head.reset('HEAD~1', index=False, working_tree=False)
+
+
+def ignoreKeystrokes(callSession):
+    """
+    Flush function:
+    It calls iRODS session renewal function and
+    while waiting for it to finish, ignores any keystrokes.
+    Parameters
+    ----------
+    callSession : function - renewIrodsSession()
+    """
+
+    while (1):
+        import sys
+        from termios import tcflush, TCIOFLUSH
+        callSession()
+        sys.stdout.flush()
+        tcflush(sys.stdin, TCIOFLUSH)
+        break
